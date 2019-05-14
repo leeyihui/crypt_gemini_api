@@ -1,0 +1,318 @@
+<div class="ui padded stackable grid content-management-grid" id="content_management_api_gemini">
+  <div class="row">
+    <div class="sixteen wide column">
+      <h3>Dashboard</h3>
+      API - GEMINI
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="eight wide column" style="height:400px">
+      <h4 class="ui top attached header">
+        Order Placement
+      </h4>
+      <div class="ui attached segment">
+        <div class="row" id="new_order_form_container">
+          <div class="sixteen wide column">
+            <div class="ui form">
+              <div class="inline fields">
+                <div class="field">
+                  <label>Pairing</label>
+                  <div class="ui compact selection dropdown" id="currency_pairing_dropdown">
+                    <input type="hidden" name="symbol">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Select Currency Pair</div>
+                    <div class="menu">
+                      <% @symbols.each do |symbol| %>
+                        <div class="item" data-value="<%= symbol %>"><%= symbol.upcase %></div>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="inline fields">
+                <div class="field">
+                  <strong>I want to</strong>
+                </div>
+                <div class="field">
+                  <div class="ui compact selection dropdown" id="side_dropdown">
+                    <input type="hidden" name="side">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Buy/Sell</div>
+                    <div class="menu">
+                      <div class="item" data-value="buy">BUY</div>
+                      <div class="item" data-value="sell">SELL</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="inline fields">
+                <div class="field">
+                  <div class="ui right labeled input">
+                    <input type="number" id="amount" placeholder="e.g. 3.2">
+                    <div class="ui basic label" id="currency_primary">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="inline fields">
+                <div class="field">
+                  <strong>for</strong>
+                </div>
+                <div class="field">
+                  <div class="ui right labeled input">
+                    <input type="number" id="price" placeholder="e.g. 19.40">
+                    <div class="ui basic label" id="currency_secondary">
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <strong>each</strong>
+                </div>
+                <div class="field">
+                </div>
+              </div>
+              <div class="inline fields">
+                <div class="field">
+                  <div class="ui left right labeled disabled input">
+                    <div class="ui basic label">
+                      TOTAL
+                    </div>
+                    <input id="total" value="">
+                    <div class="ui basic label" id="currency_secondary_two">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="inline fields">
+                <div class="field">
+                  <label>Order Type</label>
+                  <div class="ui compact selection dropdown" id="options_dropdown">
+                    <input type="hidden" name="symbol">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Select Order Type</div>
+                    <div class="menu">
+                      <div class="item" data-value="maker-or-cancel">Maker-or-Cancel</div>
+                      <div class="item" data-value="immediate-or-cancel">Immediate-or-Cancel</div>
+                      <div class="item" data-value="fill-or-kill">Fill-or-Kill</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="inline fields">
+                <button class="ui primary submit button" id="submit_order_button">SUBMIT ORDER</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="eight wide column" style="height:400px">
+      <h4 class="ui top attached header">
+        Order Book
+      </h4>
+      <div class="ui attached segment">
+        <div class="row">
+          <div class="sixteen wide column">
+            <div class="ui form">
+              <div class="inline fields">
+                <div class="field">
+                  <label>View</label>
+                  <div class="ui compact selection dropdown" id="currency_pairing_dropdown_for_current_order_book">
+                    <input type="hidden" name="symbol">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Select Currency Pair</div>
+                    <div class="menu">
+                      <% @symbols.each do |symbol| %>
+                        <div class="item" data-value="<%= symbol %>"><%= symbol.upcase %></div>
+                      <% end %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="sixteen wide column" style="height:310px; overflow:scroll;">
+            <table class="ui very compact small unstackable table" id="current_order_book_table">
+              <thead>
+                <tr>
+                  <th class="center aligned">Price</th>
+                  <th class="right aligned">Volume</th>
+                </tr>
+              </thead>
+              <tbody class="scrollContent">
+                <% (0...50).reverse_each do |i| %>
+                  <tr class="positive">
+                    <td class="center aligned" id="ask_price_<%= i %>"></td>
+                    <td class="right aligned" id="ask_volume_<%= i %>"></td>
+                  </tr>
+                <% end %>
+                <tr class="active center aligned">
+                  <td colspan="2"><strong>Spread: <span id="spread"></span></strong></td>
+                </tr>
+                <% for i in 0...50 %>
+                  <tr class="negative">
+                    <td class="center aligned" id="bid_price_<%= i %>"></td>
+                    <td class="right aligned" id="bid_volume_<%= i %>"></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+  </div>
+
+  <div class="row">
+    <div class="sixteen wide column">
+      <table class="ui very compact small unstackable table" id="active_orders">
+        <thead>
+          <tr>
+            <th colspan="9">Active Orders <i class="circular get_active_orders sync alternate icon"></i></th>
+          </tr>
+          <tr>
+            <th class="left aligned">Date</th>
+            <th class="center aligned">Symbol</th>
+            <th class="center aligned">Side</th>
+            <th class="center aligned">Order Type</th>
+            <th class="right aligned">Price</th>
+            <th class="right aligned">Quantity</th>
+            <th class="right aligned">Total</th>
+            <th class="right aligned">Status</th>
+            <th class="right aligned"></th>
+          </tr>
+        </thead>
+        <tbody id="active_orders_table_body">
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="sixteen wide column">
+      <table class="ui very compact small unstackable green table" id="available_balance">
+        <thead>
+          <tr>
+            <th colspan="4">Available Balance <i class="circular get_available_balances sync alternate icon"></i></th>
+          </tr>
+          <tr>
+            <th class="left aligned">Currency</th>
+            <th class="right aligned">Amount</th>
+            <th class="right aligned">Available</th>
+            <th class="right aligned">Available For Withdrawal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% for i in 0...6 %>
+            <tr>
+              <td class="left aligned" id="available_balance_currency_<%= i %>"></td>
+              <td class="right aligned" id="available_balance_amount_<%= i %>"></td>
+              <td class="right aligned" id="available_balance_available_<%= i %>"></td>
+              <td class="right aligned" id="available_balance_available_for_withdrawal_<%= i %>"></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+
+  <!-- <div class="row">
+    <div class="sixteen wide column">
+      <button class="ui basic symbols button">Symbols</button>
+    </div>
+  </div> -->
+<!--
+  <div class="row">
+    <div class="sixteen wide column">
+      Market Maker
+    </div>
+    <div class="sixteen wide column">
+      <button class="ui basic market_maker button">Execute</button>
+    </div>
+  </div> -->
+
+  <!-- <div class="row">
+    <div class="sixteen wide column">
+      Current Bid/Ask
+    </div>
+    <div class="sixteen wide column">
+      <% @symbols.each do |symbol| %>
+        <button class="ui basic ticker button" data-value="<%= symbol %>"><%= symbol %></button>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="sixteen wide column">
+      Current Order Book
+    </div>
+    <div class="sixteen wide column">
+      <% @symbols.each do |symbol| %>
+        <button class="ui basic current_order_book button" data-value="<%= symbol %>"><%= symbol %></button>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="sixteen wide column">
+      Trade History
+    </div>
+    <div class="sixteen wide column">
+      <% @symbols.each do |symbol| %>
+        <button class="ui basic trade_history button" data-value="<%= symbol %>"><%= symbol %></button>
+      <% end %>
+    </div>
+  </div> -->
+
+  <!-- <div class="row">
+    <div class="sixteen wide column">
+      Current Auction
+    </div>
+    <div class="sixteen wide column">
+      <% @symbols.each do |symbol| %>
+        <button class="ui basic current_auction button" data-value="<%= symbol %>"><%= symbol %></button>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="sixteen wide column">
+      Auction History
+    </div>
+    <div class="sixteen wide column">
+      <% @symbols.each do |symbol| %>
+        <button class="ui basic auction_history button" data-value="<%= symbol %>"><%= symbol %></button>
+      <% end %>
+    </div>
+  </div> -->
+
+
+
+
+
+  <!-- <div class="row">
+    <div class="sixteen wide column">
+      <button class="ui basic get_active_orders button">Get Active Orders</button>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="sixteen wide column">
+      Get Past Trades
+    </div>
+    <div class="sixteen wide column">
+      <% @symbols.each do |symbol| %>
+        <button class="ui basic get_past_trades button" data-value="<%= symbol %>"><%= symbol %></button>
+      <% end %>
+    </div>
+  </div> -->
