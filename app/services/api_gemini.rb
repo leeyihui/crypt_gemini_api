@@ -14,63 +14,6 @@ class ApiGemini
 
   end
 
-  def market_maker
-    # Get current bid ask
-    request_type = 'get'
-    api_path = '/v1/pubticker/' + 'btcusd'
-
-    payload = {
-    }
-
-    response_hashes = []
-
-    response = send_api_request(api_path, payload, request_type)
-
-    bid_price = response['bid']
-    ask_price = response['ask']
-    response_hashes.push(response)
-
-
-    request_type = 'post'
-    api_path = '/v1/order/new'
-
-    payload_1 = {
-      'request' => api_path,
-      'nonce' => @timestamp,
-      'client_order_id' => DateTime.now.strftime('%d %b %Y, %a, %H:%M:%S'),
-      'symbol' => 'btcusd',
-      'amount' => '0.1',
-      'price' => (bid_price.to_f).round(2).to_s,
-      'side' => 'buy',
-      'type' => 'exchange limit',
-      'options' => ['maker-or-cancel']
-    }
-
-    puts payload_1
-
-    request_type = 'post'
-    api_path = '/v1/order/new'
-
-    payload_2 = {
-      'request' => api_path,
-      'nonce' => (@timestamp.to_i+1).to_i,
-      'client_order_id' => DateTime.now.strftime('%d %b %Y, %a, %H:%M:%S'),
-      'symbol' => 'btcusd',
-      'amount' => '0.1',
-      'price' => (ask_price.to_f - 0.01).round(2).to_s,
-      'side' => 'sell',
-      'type' => 'exchange limit',
-      'options' => ['maker-or-cancel']
-    }
-
-    puts payload_2
-
-    response_hashes.push(send_api_request(api_path, payload_1, request_type))
-    response_hashes.push(send_api_request(api_path, payload_2, request_type))
-
-    return response_hashes
-  end
-
   def symbols
     request_type = 'get'
     api_path = '/v1/symbols'
